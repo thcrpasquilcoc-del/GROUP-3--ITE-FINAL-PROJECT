@@ -1,0 +1,124 @@
+import random
+
+# Pre-filled inventory
+inventory = {
+    "Apple": {"price": 30.0, "quantity": 50},
+    "Banana": {"price": 15.0, "quantity": 100},
+    "Orange": {"price": 25.0, "quantity": 80}
+}
+
+def display_products():
+    """Display all products with price and quantity."""
+    print("\n=== 🛒 Available Products ===")
+    print("{:<15} {:<10} {:<10}".format("Product", "Price", "Quantity"))
+    print("-" * 35)
+    for name, details in inventory.items():
+        print("{:<15} ₱{:<10.2f} {:<10}".format(name, details["price"], details["quantity"]))
+    print("=" * 35)
+
+def add_product():
+    while True:
+        print(f"\nGenerated barcode: {random.randint(1000,9000)}")
+        name = input("Enter product name: ").capitalize()
+        if name in inventory:
+            print("⚠️ Product already exists. Try updating instead.")
+            continue
+        try:
+            price = float(input("Enter price: ₱"))
+            quantity = int(input("Enter quantity: "))
+            inventory[name] = {"price": price, "quantity": quantity}
+            print("✅ Product saved to list!")
+        except ValueError:
+            print("❌ Invalid input. Enter numbers only.")
+            continue
+        if input("Add another product? (yes/no): ").lower() != "yes":
+            break
+
+def update_stock():
+    name = input("Enter product name to update: ").capitalize()
+    if name in inventory:
+        try:
+            add_qty = int(input("Enter quantity to add: "))
+            inventory[name]["quantity"] += add_qty
+            print(f"🔄 {name} now has {inventory[name]['quantity']} units.")
+        except ValueError:
+            print("❌ Invalid input.")
+    else:
+        print("❌ Product not found!")
+
+def record_sale():
+    cart = {}
+    while True:
+        display_products()
+        name = input("Enter product sold: ").capitalize()
+        if name not in inventory:
+            print("❌ Product not found!")
+            continue
+        try:
+            qty = int(input("Enter quantity sold: "))
+            if qty > inventory[name]["quantity"]:
+                print("❌ Not enough stock!")
+                continue
+        except ValueError:
+            print("❌ Invalid quantity.")
+            continue
+        total = qty * inventory[name]["price"]
+        inventory[name]["quantity"] -= qty
+        if name in cart:
+            cart[name]["quantity"] += qty
+            cart[name]["total"] += total
+        else:
+            cart[name] = {"quantity": qty, "total": total}
+        print(f"✅ {qty} x {name} added. Subtotal: ₱{total:.2f}")
+        if input("Add more products? (yes/no): ").lower() != "yes":
+            break
+
+    grand_total = sum(item["total"] for item in cart.values())
+    print(f"\n💰 Total: ₱{grand_total:.2f}")
+    while True:
+        try:
+            payment = float(input("Customer payment: ₱"))
+            if payment < grand_total:
+                print("❌ Not enough money!")
+            else:
+                print(f"💵 Change: ₱{payment - grand_total:.2f}")
+                break
+        except ValueError:
+            print("❌ Invalid input.")
+
+    print("\n=== 🧾 Receipt ===")
+    for name, item in cart.items():
+        print(f"{name} x {item['quantity']} = ₱{item['total']:.2f}")
+    print(f"Total: ₱{grand_total:.2f} | Paid: ₱{payment:.2f} | Change: ₱{payment - grand_total:.2f}")
+    print("✅ Transaction done!")
+
+def product_details():
+    while True:
+        display_products()
+        name = input("Enter product to view (or 'done' to exit): ").capitalize()
+        if name.lower() == "done":
+            break
+        if name in inventory:
+            details = inventory[name]
+            print(f"✅ {name}: Price ₱{details['price']:.2f}, Quantity {details['quantity']}")
+        else:
+            print("❌ Product not found!")
+        if input("View another? (yes/no): ").lower() != "yes":
+            break
+
+def main():
+    while True:
+        print("\n--- Grocery Inventory ---")
+        print("1. Add Product\n2. Update Stock\n3. Record Sale\n4. View Product Details\n5. Exit")
+        choice = input("Choice: ")
+        if choice == "1": add_product()
+        elif choice == "2": update_stock()
+        elif choice == "3": record_sale()
+        elif choice == "4": product_details()
+        elif choice == "5":
+            print("👋 Goodbye!")
+            break
+        else: print("❌ Invalid choice!")
+
+if __name__ == "__main__":
+    main()
